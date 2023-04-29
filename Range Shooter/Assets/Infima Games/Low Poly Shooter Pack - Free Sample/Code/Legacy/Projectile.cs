@@ -119,7 +119,26 @@ public class Projectile : MonoBehaviour {
 			//Destroy bullet object
 			Destroy(gameObject);
 		}
-			
+
+		//If bullet collides with "Head" tag
+		if (collision.transform.tag == "Target Head")
+		{
+			//Toggle "isHit" on target object
+			collision.transform.parent.GetComponent
+				<TargetScript>().isHit = true;
+			//Destroy bullet object
+			Destroy(gameObject);
+		}
+
+		//If bullet collides with "Head" tag
+		if (collision.transform.tag == "Target Body")
+		{
+			//Toggle "isHit" on target object
+			collision.transform.parent.GetComponent
+				<TargetScript>().isHit = true;
+			//Destroy bullet object
+			Destroy(gameObject);
+		}
 		//If bullet collides with "ExplosiveBarrel" tag
 		if (collision.transform.tag == "ExplosiveBarrel") 
 		{

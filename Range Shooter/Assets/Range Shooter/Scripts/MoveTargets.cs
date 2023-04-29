@@ -2,19 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ShootingRangeTarget : TargetScript
+public class MoveTargets : MonoBehaviour
 {
-    [Header("Custom Fields")]
+    [Header("Line Limit on X Axis")]
     [SerializeField] private float _xLimit = 4f;
-    [SerializeField] private float _moveSpeed = 4f;
+    [SerializeField] private float _moveSpeed;
 
-    protected override void Update()
+    void Update()
     {
-        base.Update();
-
-        MoveTarget();
+        MoveTargetsLine();
     }
-    private void MoveTarget()
+    private void MoveTargetsLine()
     {
         transform.Translate(Vector3.right * _moveSpeed * Time.deltaTime);
 
