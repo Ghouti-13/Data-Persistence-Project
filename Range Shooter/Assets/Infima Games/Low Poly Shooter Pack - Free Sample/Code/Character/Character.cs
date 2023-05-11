@@ -101,7 +101,9 @@ namespace InfimaGames.LowPolyShooterPack
 		/// The magazine equipped on the character's weapon.
 		/// </summary>
 		private MagazineBehaviour equippedWeaponMagazine;
-		
+
+		private Vector3 shootingPosition;
+
 		/// <summary>
 		/// True if the character is reloading.
 		/// </summary>
@@ -148,6 +150,8 @@ namespace InfimaGames.LowPolyShooterPack
 		/// True if the game cursor is locked! Used when pressing "Escape" to allow developers to more easily access the editor.
 		/// </summary>
 		private bool cursorLocked;
+
+		private bool isOnShootingPosition;
 
 		#endregion
 
@@ -202,7 +206,17 @@ namespace InfimaGames.LowPolyShooterPack
 			//Match Aim.
 			aiming = holdingButtonAim && CanAim();
 			//Match Run.
-			running = holdingButtonRun && CanRun();
+			running = holdingButtonRun && CanRun() && !IsOnShootingPosition;
+			//Checking Return Button Press.
+			if(Input.GetKeyDown(KeyCode.Return) && IsOnShootingPosition)
+            {
+				GameManager.Instance.StartGame(true);
+				transform.position = shootingPosition;
+            }
+			if(Input.GetKeyDown(KeyCode.Escape) && isOnShootingPosition)
+            {
+				GameManager.Instance.StartGame(false);
+            }
 
 			//Holding the firing button.
 			if (holdingButtonFire)
@@ -237,12 +251,32 @@ namespace InfimaGames.LowPolyShooterPack
 				characterKinematics.Compute();
 			}
 		}
-		
-		#endregion
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.CompareTag("StartPos"))
+            {
+				if (UIManager.Instance == null) return;
 
-		#region GETTERS
+				UIManager.Instance.SetStartText(true);
+				shootingPosition = new Vector3(other.transform.position.x, transform.position.y, other.transform.position.z);
+				isOnShootingPosition = true;
+            }
+        }
+        private void OnTriggerExit(Collider other)
+        {
+            if (other.CompareTag("StartPos")) 
+			{
+				if (UIManager.Instance == null) return;
 
-		public override Camera GetCameraWorld() => cameraWorld;
+				UIManager.Instance.SetStartText(false);
+				isOnShootingPosition = false;
+			}
+        }
+        #endregion
+
+        #region GETTERS
+
+        public override Camera GetCameraWorld() => cameraWorld;
 
 		public override InventoryBehaviour GetInventory() => inventory;
 		
@@ -253,6 +287,7 @@ namespace InfimaGames.LowPolyShooterPack
 		public override bool IsCursorLocked() => cursorLocked;
 		
 		public override bool IsTutorialTextVisible() => tutorialTextVisible;
+		public bool IsOnShootingPosition => isOnShootingPosition;
 		
 		public override Vector2 GetInputMovement() => axisMovement;
 		public override Vector2 GetInputLook() => axisLook;
@@ -267,7 +302,8 @@ namespace InfimaGames.LowPolyShooterPack
 		private void UpdateAnimator()
 		{
 			//Movement Value. This value affects absolute movement. Aiming movement uses this, as opposed to per-axis movement.
-			characterAnimator.SetFloat(HashMovement, Mathf.Clamp01(Mathf.Abs(axisMovement.x) + Mathf.Abs(axisMovement.y)), dampTimeLocomotion, Time.deltaTime);
+			if (!GameManager.Instance.IsCountDown)
+				characterAnimator.SetFloat(HashMovement, Mathf.Clamp01(Mathf.Abs(axisMovement.x) + Mathf.Abs(axisMovement.y)), dampTimeLocomotion, Time.deltaTime);
 			
 			//Update the aiming value, but use interpolation. This makes sure that things like firing can transition properly.
 			characterAnimator.SetFloat(HashAimingAlpha, Convert.ToSingle(aiming), 0.25f / 1.0f * dampTimeAiming, Time.deltaTime);
@@ -756,17 +792,17 @@ namespace InfimaGames.LowPolyShooterPack
 		
 		public void OnLockCursor(InputAction.CallbackContext context)
 		{
-			//Switch.
-			switch (context)
-			{
-				//Performed.
-				case {phase: InputActionPhase.Performed}:
-					//Toggle the cursor locked value.
-					cursorLocked = !cursorLocked;
-					//Update the cursor's state.
-					UpdateCursorState();
-					break;
-			}
+			////Switch.
+			//switch (context)
+			//{
+			//	//Performed.
+			//	case {phase: InputActionPhase.Performed}:
+			//		//Toggle the cursor locked value.
+			//		cursorLocked = !cursorLocked;
+			//		//Update the cursor's state.
+			//		UpdateCursorState();
+			//		break;
+			//}
 		}
 		
 		/// <summary>

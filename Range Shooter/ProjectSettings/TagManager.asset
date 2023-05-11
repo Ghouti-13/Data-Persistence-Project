@@ -16,8 +16,6 @@ TagManager:
   - Wood (Static)
   - Dirt (Static)
   - Wood
-  - Target Body
-  - Target Head
   layers:
   - Default
   - TransparentFX

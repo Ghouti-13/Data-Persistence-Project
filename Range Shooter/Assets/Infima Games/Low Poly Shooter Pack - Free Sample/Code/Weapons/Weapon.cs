@@ -240,8 +240,9 @@ namespace InfimaGames.LowPolyShooterPack
         public override void FillAmmunition(int amount)
         {
             //Update the value by a certain amount.
-            ammunitionCurrent = amount != 0 ? Mathf.Clamp(ammunitionCurrent + amount, 
+            ammunitionCurrent = amount != 0 ? Mathf.Clamp(ammunitionCurrent + amount,
                 0, GetAmmunitionTotal()) : magazineBehaviour.GetAmmunitionTotal();
+
         }
 
         public override void EjectCasing()

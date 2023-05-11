@@ -25,7 +25,7 @@ public class TargetScript : MonoBehaviour {
 
 	public AudioSource audioSource;
 	
-	protected virtual void Update () {
+	protected virtual void Update() {
 		
 		//Generate random time based on min and max time values
 		randomTime = Random.Range (minTime, maxTime);

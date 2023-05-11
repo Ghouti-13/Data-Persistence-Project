@@ -123,22 +123,39 @@ public class Projectile : MonoBehaviour {
 		//If bullet collides with "Head" tag
 		if (collision.transform.tag == "Target Head")
 		{
+			var target = collision.transform.parent.GetComponent<ShootingRangeTarget>();
+
 			//Toggle "isHit" on target object
-			collision.transform.parent.GetComponent
-				<TargetScript>().isHit = true;
+			target.isHit = true;
+
+			if (GameManager.Instance.IsCountDown)
+			{
+				GameManager.Instance.AddScore(Mathf.FloorToInt(target.targetScore * 1.5f), true);
+				GameManager.Instance.AddCurrency(Mathf.FloorToInt(target.targetCurrency * 1.5f));
+			}
+
 			//Destroy bullet object
 			Destroy(gameObject);
 		}
 
-		//If bullet collides with "Head" tag
+		//If bullet collides with "Body" tag
 		if (collision.transform.tag == "Target Body")
 		{
+			var target = collision.transform.parent.GetComponent<ShootingRangeTarget>();
+
 			//Toggle "isHit" on target object
-			collision.transform.parent.GetComponent
-				<TargetScript>().isHit = true;
+			target.isHit = true;
+
+			if (GameManager.Instance.IsCountDown)
+			{
+				GameManager.Instance.AddScore(target.targetScore);
+				GameManager.Instance.AddCurrency(target.targetCurrency);
+			}
+
 			//Destroy bullet object
 			Destroy(gameObject);
 		}
+
 		//If bullet collides with "ExplosiveBarrel" tag
 		if (collision.transform.tag == "ExplosiveBarrel") 
 		{
