@@ -97,6 +97,11 @@ namespace InfimaGames.LowPolyShooterPack
         public override WeaponBehaviour GetEquipped() => equipped;
         public override int GetEquippedIndex() => equippedIndex;
 
+        public override void AddWeapon()
+        {
+            Init();
+        }
+
         #endregion
     }
 }

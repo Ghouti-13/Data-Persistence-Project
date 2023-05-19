@@ -40,20 +40,20 @@ namespace InfimaGames.LowPolyShooterPack
 				playerCharacter.EjectCasing();
 		}
 
-		/// <summary>
-		/// Fills the character's equipped weapon's ammunition by a certain amount, or fully if set to 0. This function is called
-		/// from a Animation Event.
-		/// </summary>
-		private void OnAmmunitionFill(int amount = 0)
-		{
-			//Notify the character.
-			if(playerCharacter != null)
-				playerCharacter.FillAmmunition(amount);
-		}
-		/// <summary>
-		/// Sets the character's knife active value. This function is called from an Animation Event.
-		/// </summary>
-		private void OnSetActiveKnife(int active)
+        /// <summary>
+        /// Fills the character's equipped weapon's ammunition by a certain amount, or fully if set to 0. This function is called
+        /// from a Animation Event.
+        /// </summary>
+        private void OnAmmunitionFill(int amount = 0)
+        {
+            //Notify the character.
+            if (playerCharacter != null)
+                playerCharacter.FillAmmunition(amount);
+        }
+        /// <summary>
+        /// Sets the character's knife active value. This function is called from an Animation Event.
+        /// </summary>
+        private void OnSetActiveKnife(int active)
 		{
 		}
 		

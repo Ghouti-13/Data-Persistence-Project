@@ -16,6 +16,11 @@ namespace InfimaGames.LowPolyShooterPack
         [Tooltip("Is this weapon automatic? If yes, then holding down the firing button will continuously fire.")]
         [SerializeField] 
         private bool automatic;
+
+        [Header("Ammunition")]
+        [SerializeField] private int currentAmmunition;
+        [SerializeField] private int magazinAmmunition;
+        private int maxMagazineAmmunition;
         
         [Tooltip("How fast the projectiles are.")]
         [SerializeField]
@@ -158,7 +163,8 @@ namespace InfimaGames.LowPolyShooterPack
             #endregion
 
             //Max Out Ammo.
-            ammunitionCurrent = magazineBehaviour.GetAmmunitionTotal();
+            currentAmmunition = magazineBehaviour.GetAmmunitionTotal();
+            maxMagazineAmmunition = magazinAmmunition = magazineBehaviour.GetAmmunitionTotal();
         }
 
         #endregion
@@ -179,18 +185,21 @@ namespace InfimaGames.LowPolyShooterPack
         
         public override AudioClip GetAudioClipFire() => muzzleBehaviour.GetAudioClipFire();
         
-        public override int GetAmmunitionCurrent() => ammunitionCurrent;
+        public override int GetAmmunitionCurrent() => currentAmmunition;
+        public override int GetMagazineAmmunition() => magazinAmmunition; 
 
         public override int GetAmmunitionTotal() => magazineBehaviour.GetAmmunitionTotal();
 
         public override bool IsAutomatic() => automatic;
         public override float GetRateOfFire() => roundsPerMinutes;
         
-        public override bool IsFull() => ammunitionCurrent == magazineBehaviour.GetAmmunitionTotal();
-        public override bool HasAmmunition() => ammunitionCurrent > 0;
+        public override bool IsFull() => currentAmmunition == magazineBehaviour.GetAmmunitionTotal();
+        public override bool HasAmmunition() => currentAmmunition > 0;
+        public override bool HasMagazineAmmunition() => magazinAmmunition > 0;
 
         public override RuntimeAnimatorController GetAnimatorController() => controller;
         public override WeaponAttachmentManagerBehaviour GetAttachmentManager() => attachmentManager;
+        public override void SetMagazineAmmunition(int ammoAmount) => maxMagazineAmmunition = magazinAmmunition += ammoAmount;
 
         #endregion
 
@@ -218,7 +227,7 @@ namespace InfimaGames.LowPolyShooterPack
             const string stateName = "Fire";
             animator.Play(stateName, 0, 0.0f);
             //Reduce ammunition! We just shot, so we need to get rid of one!
-            ammunitionCurrent = Mathf.Clamp(ammunitionCurrent - 1, 0, magazineBehaviour.GetAmmunitionTotal());
+            currentAmmunition = Mathf.Clamp(currentAmmunition - 1, 0, magazineBehaviour.GetAmmunitionTotal());
 
             //Play all muzzle effects.
             muzzleBehaviour.Effect();
@@ -239,10 +248,13 @@ namespace InfimaGames.LowPolyShooterPack
 
         public override void FillAmmunition(int amount)
         {
-            //Update the value by a certain amount.
-            ammunitionCurrent = amount != 0 ? Mathf.Clamp(ammunitionCurrent + amount,
-                0, GetAmmunitionTotal()) : magazineBehaviour.GetAmmunitionTotal();
+            int fillAmount = magazineBehaviour.GetAmmunitionTotal() - currentAmmunition;
 
+            int ammoPickedFromMagazine = magazinAmmunition - fillAmount;
+            magazinAmmunition = Mathf.Clamp(ammoPickedFromMagazine, 0, maxMagazineAmmunition);
+
+            //Update the value by a certain amount.
+            currentAmmunition = Mathf.Clamp(currentAmmunition + fillAmount + ammoPickedFromMagazine, 0, magazineBehaviour.GetAmmunitionTotal());
         }
 
         public override void EjectCasing()
@@ -250,6 +262,10 @@ namespace InfimaGames.LowPolyShooterPack
             //Spawn casing prefab at spawn point.
             if(prefabCasing != null && socketEjection != null)
                 Instantiate(prefabCasing, socketEjection.position, socketEjection.rotation);
+        }
+        public override void ResetWeaponAmmunition()
+        {
+            currentAmmunition = magazinAmmunition = maxMagazineAmmunition;
         }
 
         #endregion

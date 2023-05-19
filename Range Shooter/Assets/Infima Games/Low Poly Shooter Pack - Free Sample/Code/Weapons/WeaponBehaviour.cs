@@ -78,6 +78,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// <summary>
         /// Returns the Weapon's Animator component.
         /// </summary>
+        public abstract int GetMagazineAmmunition();
         public abstract Animator GetAnimator();
         
         /// <summary>
@@ -92,6 +93,7 @@ namespace InfimaGames.LowPolyShooterPack
         /// <summary>
         /// Returns true if the weapon is full of ammunition.
         /// </summary>
+        public abstract bool HasMagazineAmmunition();
         public abstract bool IsFull();
         /// <summary>
         /// Returns the weapon's rate of fire.
@@ -130,6 +132,8 @@ namespace InfimaGames.LowPolyShooterPack
         /// Ejects a casing from the weapon. This is commonly called from animation events, but can be called from anywhere.
         /// </summary>
         public abstract void EjectCasing();
+        public abstract void SetMagazineAmmunition(int ammoAmount);
+        public abstract void ResetWeaponAmmunition();
 
         #endregion
     }

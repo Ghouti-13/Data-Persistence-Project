@@ -26,6 +26,10 @@ namespace InfimaGames.LowPolyShooterPack
         /// </summary>
         private float current = 1.0f;
 
+        private void Start()
+        {
+            Time.timeScale = 1f;
+        }
         /// <summary>
         /// Updates The Time Scale.
         /// </summary>

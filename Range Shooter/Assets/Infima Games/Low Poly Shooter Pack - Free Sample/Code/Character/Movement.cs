@@ -133,7 +133,7 @@ namespace InfimaGames.LowPolyShooterPack
 			
         protected override void FixedUpdate()
         {
-            if (GameManager.Instance.IsCountDown) return;
+            if (GameManager.Instance != null && GameManager.Instance.IsCountDown) return;
 
             //Move.
             MoveCharacter();

@@ -35,7 +35,6 @@ namespace InfimaGames.LowPolyShooterPack
         /// Sprite.
         /// </summary>
         public override Sprite GetSprite() => sprite;
-
         #endregion
     }
 }

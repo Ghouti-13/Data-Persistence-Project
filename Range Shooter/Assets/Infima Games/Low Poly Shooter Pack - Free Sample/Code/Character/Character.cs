@@ -44,6 +44,8 @@ namespace InfimaGames.LowPolyShooterPack
 		[SerializeField]
 		private Animator characterAnimator;
 
+		[SerializeField] private GameplayUI gameplayUI;
+
 		#endregion
 
 		#region FIELDS
@@ -173,17 +175,17 @@ namespace InfimaGames.LowPolyShooterPack
 
 		protected override void Awake()
 		{
-			#region Lock Cursor
+            #region Lock Cursor
 
-			//Always make sure that our cursor is locked when the game starts!
-			cursorLocked = true;
-			//Update the cursor's state.
-			UpdateCursorState();
+            //Always make sure that our cursor is locked when the game starts!
+            cursorLocked = true;
+            //Update the cursor's state.
+            UpdateCursorState();
 
-			#endregion
+            #endregion
 
-			//Cache the CharacterKinematics component.
-			characterKinematics = GetComponent<CharacterKinematics>();
+            //Cache the CharacterKinematics component.
+            characterKinematics = GetComponent<CharacterKinematics>();
 
 			//Initialize Inventory.
 			inventory.Init();
@@ -203,6 +205,8 @@ namespace InfimaGames.LowPolyShooterPack
 
 		protected override void Update()
 		{
+			if (GameManager.Instance != null && GameManager.Instance.IsGamePaused) return;
+
 			//Match Aim.
 			aiming = holdingButtonAim && CanAim();
 			//Match Run.
@@ -210,12 +214,9 @@ namespace InfimaGames.LowPolyShooterPack
 			//Checking Return Button Press.
 			if(Input.GetKeyDown(KeyCode.Return) && IsOnShootingPosition)
             {
+				equippedWeapon.ResetWeaponAmmunition();
 				GameManager.Instance.StartGame(true);
 				transform.position = shootingPosition;
-            }
-			if(Input.GetKeyDown(KeyCode.Escape) && isOnShootingPosition)
-            {
-				GameManager.Instance.StartGame(false);
             }
 
 			//Holding the firing button.
@@ -255,9 +256,9 @@ namespace InfimaGames.LowPolyShooterPack
         {
             if (other.CompareTag("StartPos"))
             {
-				if (UIManager.Instance == null) return;
+				if (GameManager.Instance == null) return;
 
-				UIManager.Instance.SetStartText(true);
+				gameplayUI.SetStartText(true);
 				shootingPosition = new Vector3(other.transform.position.x, transform.position.y, other.transform.position.z);
 				isOnShootingPosition = true;
             }
@@ -266,9 +267,7 @@ namespace InfimaGames.LowPolyShooterPack
         {
             if (other.CompareTag("StartPos")) 
 			{
-				if (UIManager.Instance == null) return;
-
-				UIManager.Instance.SetStartText(false);
+				gameplayUI.SetStartText(false);
 				isOnShootingPosition = false;
 			}
         }
@@ -302,7 +301,7 @@ namespace InfimaGames.LowPolyShooterPack
 		private void UpdateAnimator()
 		{
 			//Movement Value. This value affects absolute movement. Aiming movement uses this, as opposed to per-axis movement.
-			if (!GameManager.Instance.IsCountDown)
+			if (GameManager.Instance != null && !GameManager.Instance.IsCountDown)
 				characterAnimator.SetFloat(HashMovement, Mathf.Clamp01(Mathf.Abs(axisMovement.x) + Mathf.Abs(axisMovement.y)), dampTimeLocomotion, Time.deltaTime);
 			
 			//Update the aiming value, but use interpolation. This makes sure that things like firing can transition properly.
@@ -345,6 +344,8 @@ namespace InfimaGames.LowPolyShooterPack
 
 		private void PlayReloadAnimation()
 		{
+			if (!equippedWeapon.HasMagazineAmmunition()) return;
+
 			#region Animation
 
 			//Get the name of the animation state to play, which depends on weapon settings, and ammunition!
@@ -591,12 +592,35 @@ namespace InfimaGames.LowPolyShooterPack
 		#endregion
 
 		#region INPUT
-
+		public void OnTryPurchaseAmmo(InputAction.CallbackContext context)
+        {
+            switch (context)
+            {
+				case { phase: InputActionPhase.Performed }:
+                    if (equippedWeapon.IsAutomatic())
+                    {
+						ShopManager.Instance.PurchaseAmmo(AmmoData.AmmoType.Riffle, (addedAmmo) =>
+						{
+							equippedWeapon.SetMagazineAmmunition(addedAmmo);
+						});
+                    }
+                    else
+                    {
+						ShopManager.Instance.PurchaseAmmo(AmmoData.AmmoType.Handgun, (addedAmmo) =>
+						{
+							equippedWeapon.SetMagazineAmmunition(addedAmmo);
+						});
+					}
+					break;
+            }
+        }
 		/// <summary>
 		/// Fire.
 		/// </summary>
 		public void OnTryFire(InputAction.CallbackContext context)
 		{
+			if (GameManager.Instance != null && GameManager.Instance.IsGamePaused) return;
+
 			//Block while the cursor is unlocked.
 			if (!cursorLocked)
 				return;
@@ -792,28 +816,28 @@ namespace InfimaGames.LowPolyShooterPack
 		
 		public void OnLockCursor(InputAction.CallbackContext context)
 		{
-			////Switch.
-			//switch (context)
-			//{
-			//	//Performed.
-			//	case {phase: InputActionPhase.Performed}:
-			//		//Toggle the cursor locked value.
-			//		cursorLocked = !cursorLocked;
-			//		//Update the cursor's state.
-			//		UpdateCursorState();
-			//		break;
-			//}
-		}
-		
-		/// <summary>
-		/// Movement.
-		/// </summary>
-		public void OnMove(InputAction.CallbackContext context)
+            //Switch.
+            switch (context)
+            {
+                //Performed.
+                case { phase: InputActionPhase.Performed }:
+                    //Toggle the cursor locked value.
+                    cursorLocked = !cursorLocked;
+                    //Update the cursor's state.
+                    UpdateCursorState();
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Movement.
+        /// </summary>
+        public void OnMove(InputAction.CallbackContext context)
 		{
 			//Read.
 			axisMovement = cursorLocked ? context.ReadValue<Vector2>() : default;
-		}
 		/// <summary>
+		}
 		/// Look.
 		/// </summary>
 		public void OnLook(InputAction.CallbackContext context)

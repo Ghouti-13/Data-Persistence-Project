@@ -1,16 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance = null;
 
+    [SerializeField] private GameplayUI gameplayUI;
+
     [SerializeField] private float shootingTime;
     [SerializeField] private int score;
-    [SerializeField] private int currency;
+
+    private float initialShootingTime;
+    private int bestScore;
+
     private bool isCountDown;
+    private bool gamePaused;
+
     public bool IsCountDown => isCountDown;
+    public bool IsGamePaused => gamePaused;
+    public int Score => score;
 
     private void Awake()
     {
@@ -18,10 +28,10 @@ public class GameManager : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
-    }
-    private void Start()
-    {
-        ResetGameData();
+
+        score = 0;
+        initialShootingTime = shootingTime;
+        bestScore = DataManager.GameData.BestScoe;
     }
     private void Update()
     {
@@ -30,43 +40,91 @@ public class GameManager : MonoBehaviour
     public void AddScore(int scoreToAdd, bool isHeadshoot = false)
     {
         score += scoreToAdd;
-        UIManager.Instance.SetScoreText(score);
-        if (isHeadshoot) UIManager.Instance.TriggerHeadshoot();
+        gameplayUI.SetScoreText(score);
+        if (isHeadshoot) gameplayUI.TriggerHeadshoot();
     }
-    public void AddCurrency(int currencyToAdd)
+    public void AddCurrency(int currencyToAdd, bool addCurrency = true)
     {
-        currency += currencyToAdd;
-        UIManager.Instance.SetAddedCurrencyText(currency, currencyToAdd, Color.green);
+        ShopManager.Instance.AddCurrency(currencyToAdd, addCurrency);
     }
     public void StartGame(bool value)
     {
+        shootingTime = initialShootingTime;
         isCountDown = value;
-        UIManager.Instance.SetStartText(!value);
-        if (!value) ResetGameData();
+        gameplayUI.SetStartText(false);
+    }
+    public void ResetData()
+    {
+        score = 0;
     }
     private void StartCountDown()
     {
+        if (gamePaused) return;
+
         if (shootingTime > 0.1f)
         {
             shootingTime -= Time.deltaTime;
             UpdateTimer();
         }
+        else
+        {
+            Gameover();
+        }
     }
-    private void ResetGameData()
+    private void PauseGame(bool value)
     {
-        score = currency = 0;
-        shootingTime = 90f;
+        if (UIManager.Instance == null) return;
 
-        UIManager.Instance.SetCurrencyText(currency);
-        UIManager.Instance.SetScoreText(score);
+        Time.timeScale = value ? 0 : 1f;
 
-        UpdateTimer();
+        Cursor.lockState = value ? CursorLockMode.None : CursorLockMode.Locked;
+        Cursor.visible = value;
+
+        gameplayUI.DisplayPauseWindow(value);
+        gamePaused = value;
     }
-    private void UpdateTimer()
+    public void UpdateTimer()
     {
         int minutes = Mathf.FloorToInt(shootingTime / 60);
         int seconds = Mathf.FloorToInt(shootingTime % 60);
 
-        UIManager.Instance.SetTimeText(minutes, seconds);
+        gameplayUI.SetTimeText(minutes, seconds);
     }
+    public void Gameover()
+    {
+        if (GameplayUI.Instance == null) return;
+
+        gamePaused = true;
+        Time.timeScale = 0;
+        Cursor.lockState = CursorLockMode.None;
+
+        DataManager.GameData.PlayerScore = score;
+        DataManager.GameData.PlayerCurrency = ShopManager.Instance.Currency;
+
+        // Checking the best score //
+        if (score > bestScore)
+        {
+            DataManager.GameData.BestScoe = score;
+            DataManager.GameData.BestPlayerName = UIManager.PlayerName;
+        }
+
+        // Saving the progress //
+        DataManager.Save();
+
+        gameplayUI.DisplayGameoverWindow(true);
+    }
+#region INPUT
+
+    public void OnTryPause(InputAction.CallbackContext context)
+    {
+        if (shootingTime < 0.1f) return;
+
+        switch (context)
+        {
+            case { phase: InputActionPhase.Performed }:
+                PauseGame(!gamePaused);
+                break;
+        }
+    }
+#endregion
 }
