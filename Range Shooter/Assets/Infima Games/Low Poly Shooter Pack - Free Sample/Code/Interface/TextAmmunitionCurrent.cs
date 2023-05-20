@@ -49,7 +49,7 @@ namespace InfimaGames.LowPolyShooterPack.Interface
                 //Calculate Color Alpha. Helpful to make the text color change based on count.
                 float colorAlpha = (current / total) * emptySpeed;
                 //Lerp Color. This makes sure that the text color changes based on count.
-                textMesh.color = Color.Lerp(emptyColor, Color.white, colorAlpha);   
+                textMesh.color = Color.Lerp(emptyColor, Color.black, colorAlpha);   
             }
         }
         

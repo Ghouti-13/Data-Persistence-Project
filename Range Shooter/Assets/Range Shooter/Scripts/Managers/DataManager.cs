@@ -19,6 +19,8 @@ public class DataManager : MonoBehaviour
 
     private void Awake()
     {
+        Application.targetFrameRate = 60;
+
         GameData = Load();
 
         if(GameData == null)
@@ -33,10 +35,9 @@ public class DataManager : MonoBehaviour
         if (GameData != null)
         {
             var json = JsonUtility.ToJson(GameData);
-            print(json);
             File.WriteAllText(savePath, json);
 
-            print("Progress Saved");
+            //print("Progress Saved");
         }
     }
     public static GameData Load()
@@ -47,8 +48,17 @@ public class DataManager : MonoBehaviour
 
         var json = File.ReadAllText(loadPath);
 
-        print("Progress Loaded");
+        //print("Progress Loaded");
 
         return JsonUtility.FromJson<GameData>(json);
+    }
+    public static void DeleteSaveFile()
+    {
+        string savePath = Application.persistentDataPath + "/save.file";
+
+        if (File.Exists(savePath))
+        {
+            File.Delete(savePath);
+        }
     }
 }

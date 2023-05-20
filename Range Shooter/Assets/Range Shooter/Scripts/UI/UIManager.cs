@@ -12,8 +12,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] protected TMP_Text scoreText, bestScoreText;
     [SerializeField] protected Animator addedCurrencyAnimator;
 
-    public static string PlayerName;
-
     protected void Awake()
     {
         if (Instance == null)

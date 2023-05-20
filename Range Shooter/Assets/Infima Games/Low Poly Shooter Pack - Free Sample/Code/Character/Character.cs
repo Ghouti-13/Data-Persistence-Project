@@ -22,6 +22,9 @@ namespace InfimaGames.LowPolyShooterPack
 		[SerializeField]
 		private InventoryBehaviour inventory;
 
+		[SerializeField] private Weapon rifflePrefab;
+		[SerializeField] private Transform riffleParent;
+
 		[Header("Cameras")]
 
 		[Tooltip("Normal Camera.")]
@@ -44,6 +47,7 @@ namespace InfimaGames.LowPolyShooterPack
 		[SerializeField]
 		private Animator characterAnimator;
 
+		[Header("UI")]
 		[SerializeField] private GameplayUI gameplayUI;
 
 		#endregion
@@ -186,6 +190,10 @@ namespace InfimaGames.LowPolyShooterPack
 
             //Cache the CharacterKinematics component.
             characterKinematics = GetComponent<CharacterKinematics>();
+
+			// Initialize the riffle weapon if it had been purchased by the player //
+			if (DataManager.GameData.HasRiffle)
+				Instantiate(rifflePrefab.gameObject, riffleParent);
 
 			//Initialize Inventory.
 			inventory.Init();
@@ -594,6 +602,10 @@ namespace InfimaGames.LowPolyShooterPack
 		#region INPUT
 		public void OnTryPurchaseAmmo(InputAction.CallbackContext context)
         {
+			if (GameManager.Instance == null) return;
+
+			if (!GameManager.Instance.IsCountDown) return;
+
             switch (context)
             {
 				case { phase: InputActionPhase.Performed }:

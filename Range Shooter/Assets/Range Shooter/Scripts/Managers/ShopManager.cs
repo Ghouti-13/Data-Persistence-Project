@@ -15,6 +15,7 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private WeaponData riffle;
 
     private int currency;
+    private AudioSource coinsAudio;
     public int Currency => currency;
 
     private void Awake()
@@ -25,6 +26,8 @@ public class ShopManager : MonoBehaviour
             Destroy(gameObject);
 
         DontDestroyOnLoad(gameObject);
+
+        coinsAudio = GetComponent<AudioSource>();
     }
     private void Start()
     {
@@ -48,12 +51,14 @@ public class ShopManager : MonoBehaviour
 
                 AddCurrency(-handgunAmmo.price, false);
                 Callback?.Invoke(handgunAmmo.quantity);
+                coinsAudio.Play();
                 break;
             case AmmoData.AmmoType.Riffle:
                 if (currency < handgunAmmo.price) break;
 
                 AddCurrency(-riffleAmmo.price, false);
                 Callback?.Invoke(riffleAmmo.quantity);
+                coinsAudio.Play();
                 break;
         }
     }
@@ -64,5 +69,6 @@ public class ShopManager : MonoBehaviour
         AddCurrency(-riffle.price, false);
         DataManager.GameData.HasRiffle = true;
         Callback?.Invoke();
+        coinsAudio.Play();
     }
 }

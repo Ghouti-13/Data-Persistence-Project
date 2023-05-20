@@ -10,6 +10,7 @@ using UnityEditor;
 
 public class MenuUI : UIManager
 {
+    [SerializeField] private TMP_InputField usernameInputField;
     [SerializeField] private Button buyButton;
 
     public override void Start()
@@ -18,13 +19,23 @@ public class MenuUI : UIManager
 
         if (string.IsNullOrWhiteSpace(DataManager.GameData.BestPlayerName))
         {
-            bestScoreText.text = " NO BEST SCORE AVAILABLE";
-            PlayerName = "Player";
+            bestScoreText.text = "NO BEST SCORE AVAILABLE";
         }
         else
         {
-            bestScoreText.text = DataManager.GameData.BestPlayerName + " HAS BEST SCORE OF " + DataManager.GameData.BestScoe;
+            bestScoreText.text = DataManager.GameData.BestPlayerName + " HAS BEST SCORE OF " + DataManager.GameData.BestScoe + " PTS";
         }
+
+        InitializeInputField();
+
+        if (DataManager.GameData.HasRiffle) LockBuyButton(true);
+    }
+    private void InitializeInputField()
+    {
+        if (string.IsNullOrWhiteSpace(DataManager.GameData.PlayerName)) return;
+
+        usernameInputField.text = DataManager.GameData.PlayerName;
+        usernameInputField.ForceLabelUpdate();
     }
     public override void UpdateCurrencyText(int currency, int currencyToAdd, bool addCurrency = true)
     {
@@ -48,16 +59,20 @@ public class MenuUI : UIManager
     {
         ShopManager.Instance.PurchaseWeapon(WeaponData.WeaponType.Riffle, () =>
         {
-            LockBuyButton();
+            LockBuyButton(true);
         });
     }
     public void OnSetPlayerName(string playerName)
     {
-        PlayerName = playerName;
+        DataManager.GameData.PlayerName = playerName;
     }
-    private void LockBuyButton()
+    public void OnDeleteButtunPressed()
     {
-        buyButton.interactable = false;
-        buyButton.GetComponentInChildren<TextMeshProUGUI>().text = "SOLD";
+        DataManager.DeleteSaveFile();
+    }
+    private void LockBuyButton(bool value)
+    {
+        buyButton.interactable = !value;
+        buyButton.GetComponentInChildren<TextMeshProUGUI>().text = value ? "SOLD" : "BUY";
     }
 }

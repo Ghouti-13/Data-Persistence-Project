@@ -96,7 +96,9 @@ public class GameManager : MonoBehaviour
 
         gamePaused = true;
         Time.timeScale = 0;
+
         Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 
         DataManager.GameData.PlayerScore = score;
         DataManager.GameData.PlayerCurrency = ShopManager.Instance.Currency;
@@ -105,7 +107,7 @@ public class GameManager : MonoBehaviour
         if (score > bestScore)
         {
             DataManager.GameData.BestScoe = score;
-            DataManager.GameData.BestPlayerName = UIManager.PlayerName;
+            DataManager.GameData.BestPlayerName = string.IsNullOrWhiteSpace(DataManager.GameData.PlayerName) ? "BEST PLAYER" : DataManager.GameData.PlayerName.ToUpper();
         }
 
         // Saving the progress //
